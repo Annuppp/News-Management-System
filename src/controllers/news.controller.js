@@ -2,7 +2,10 @@ import newsModel from "../models/news.model.js";
 
 export const createNews = async (req, res) => {
     try {
-        const news = await newsModel.create(req.body);
+        const news = await newsModel.create({
+            ...req.body,
+            image: req.file?.path,
+        });
 
         res.status(201).json({
             message: "News created successfully",
@@ -58,9 +61,20 @@ export const getNewsById = async (req, res) => {
 
 export const updateNews = async (req, res) => {
     try {
+        console.log("BODY:", req.body);
+        console.log("FILE:", req.file);
+
+        const updateData = {
+            ...req.body,
+        };
+
+        if (req.file) {
+            updateData.image = req.file.path;
+        }
+
         const news = await newsModel
-            .findByIdAndUpdate(req.params.id, req.body, {
-                new: true,
+            .findByIdAndUpdate(req.params.id, updateData, {
+                returnDocument: "after",
                 runValidators: true,
             })
             .populate("category");
