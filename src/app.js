@@ -9,7 +9,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(morgan("dev"));
-app.use("/uploads", express.static("uploads"));
 
 // route
 app.use("/category", categoryRoutes);
