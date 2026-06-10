@@ -11,3 +11,8 @@ comments: userid,replat_id,newsid,body,status: reject,approve
 Rating: newsId,rlevel
 
 9843363725
+
+Right now,
+
+- I have left the work for multer in hold
+- Working on auth system a little bit

@@ -1,17 +1,21 @@
 import express from "express";
 import morgan from "morgan";
-import categoryRoutes from "./routes/category.routes.js";
+import categoryRouter from "./routes/category.routes.js";
 import newsRouter from "./routes/news.routes.js";
+import cookieParser from "cookie-parser";
+import authRouter from "./routes/auth.routes.js";
 
 const app = express();
 
 // middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+app.use(cookieParser());
 
 // route
-app.use("/category", categoryRoutes);
+app.use("/category", categoryRouter);
 app.use("/news", newsRouter);
+app.use("/user", authRouter);
 
 export default app;
