@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import sessionModel from "../models/session.model.js";
 import crypto from "crypto";
+import { ref } from "process";
 
 export const registerUser = async (req, res) => {
     try {
@@ -83,7 +84,10 @@ export const registerUser = async (req, res) => {
 
         res.status(201).json({
             message: "User has been created",
-            user,
+            user: {
+                username: user.username,
+                email: user.email,
+            },
             accessToken,
         });
     } catch (err) {
@@ -122,7 +126,10 @@ export const getMe = async (req, res) => {
 
         res.status(200).json({
             message: "User fetched successfully",
-            user,
+            user: {
+                username: user.username,
+                email: user.email,
+            },
         });
     } catch (err) {
         res.status(400).json({
@@ -142,6 +149,11 @@ export const rotateTokens = async (req, res) => {
             });
         }
 
+        const refreshTokenHash = crypto
+            .createHash("sha256")
+            .update(refreshToken)
+            .digest("hex");
+
         const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
 
         if (!decoded) {
@@ -157,6 +169,29 @@ export const rotateTokens = async (req, res) => {
                 message: "User not found",
             });
         }
+
+        const session = await sessionModel.findOne({
+            refreshTokenHash,
+            revoked: false,
+        });
+
+        if (!session) {
+            return res.status(404).json({
+                message: "Unable to find the session",
+            });
+        }
+
+        // creating the accessToken
+        const accessToken = jwt.sign(
+            {
+                id: user._id,
+                sessionId: session._id,
+            },
+            config.ACCESS_TOKEN_SECRET,
+            {
+                expiresIn: "15m",
+            },
+        );
 
         // creating the refreshToken for extra security
         const newRefreshToken = jwt.sign(
@@ -181,39 +216,66 @@ export const rotateTokens = async (req, res) => {
             .update(newRefreshToken)
             .digest("hex");
 
-        const session = await sessionModel.findOne({
-            userId: user._id,
-        });
-
-        if (!session) {
-            return res.status(404).json({
-                message: "Unable to find the session",
-            });
-        }
-
         session.refreshTokenHash = newRefreshTokenHash;
         await session.save();
 
-        // creating the accessToken
-        const accessToken = jwt.sign(
-            {
-                id: user._id,
-                sessionId: session._id,
-            },
-            config.ACCESS_TOKEN_SECRET,
-            {
-                expiresIn: "15m",
-            },
-        );
-
         res.status(200).json({
             message: "Rotated tokens successfully",
-            user,
+            user: {
+                username: user.username,
+                email: user.email,
+            },
             accessToken,
         });
     } catch (err) {
         res.status(400).json({
             message: "Error rotating the tokens",
+            error: err.message,
+        });
+    }
+};
+
+export const logout = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(404).json({
+                message: "RefreshToken not found",
+            });
+        }
+
+        const refreshTokenHash = crypto
+            .createHash("sha256")
+            .update(refreshToken)
+            .digest("hex");
+
+        const session = await sessionModel.findOne({
+            refreshTokenHash,
+            revoked: false,
+        });
+
+        if (!session) {
+            return res.status(401).json({
+                message: "Invalid refreshToken",
+            });
+        }
+
+        session.revoked = true;
+        await session.save();
+
+        res.clearCookie("refreshToken", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+        });
+
+        res.status(200).json({
+            message: "Logged out successfully",
+        });
+    } catch (err) {
+        res.status(400).json({
+            message: " Error logging out the user",
             error: err.message,
         });
     }

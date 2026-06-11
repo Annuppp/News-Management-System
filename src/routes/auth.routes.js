@@ -12,4 +12,7 @@ authRouter.get("/getMe", authController.getMe);
 // Rotating tokens
 authRouter.post("/rotateTokens", authController.rotateTokens);
 
+// Logout route
+authRouter.get("/logout", authController.logout);
+
 export default authRouter;
