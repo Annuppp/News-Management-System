@@ -98,6 +98,7 @@ export const registerUser = async (req, res) => {
     }
 };
 
+
 export const getMe = async (req, res) => {
     try {
         const accessToken = req.headers.authorization?.split(" ")[1];
@@ -276,6 +277,45 @@ export const logout = async (req, res) => {
     } catch (err) {
         res.status(400).json({
             message: " Error logging out the user",
+            error: err.message,
+        });
+    }
+};
+
+export const logoutAll = async (req, res) => {
+    try {
+        const refreshToken = res.cookie.refreshToken;
+
+        if (!refreshToken) {
+            return res.status(404).json({
+                message: "RefreshToken not found",
+            });
+        }
+
+        const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
+
+        const session = await sessionModel.updateMany(
+            {
+                id: decoded.id,
+                revoked: false,
+            },
+            {
+                revoked: true,
+            },
+        );
+
+        res.clearCookie(refreshToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+        });
+
+        res.status(200).json({
+            message: "Logged out from all the devices successfully",
+        });
+    } catch (err) {
+        res.status(404).json({
+            message: "Error logging all the users",
             error: err.message,
         });
     }

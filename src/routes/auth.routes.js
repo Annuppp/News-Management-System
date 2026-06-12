@@ -15,4 +15,7 @@ authRouter.post("/rotateTokens", authController.rotateTokens);
 // Logout route
 authRouter.get("/logout", authController.logout);
 
+// LogoutAll
+authRouter.get("logoutAll", authController.logoutAll);
+
 export default authRouter;
