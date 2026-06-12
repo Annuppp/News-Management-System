@@ -6,6 +6,9 @@ const authRouter = Router();
 // Register User
 authRouter.post("/register", authController.registerUser);
 
+// Login User
+authRouter.get("/login", authController.login);
+
 // Identifying the user from token
 authRouter.get("/getMe", authController.getMe);
 
