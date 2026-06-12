@@ -1,93 +1,90 @@
-# =========================
-# Dependencies (Backend + Frontend)
-# =========================
+# ========================
+# DEPENDENCIES
+# ========================
 node_modules/
-backend/node_modules/
-frontend/node_modules/
+**/node_modules/
 
-# =========================
-# Environment variables
-# =========================
+# ========================
+# ENV FILES
+# ========================
 .env
 .env.*
+**/.env
+**/.env.*
+
+# keep example env
 !.env.example
+!**/.env.example
 
-backend/.env
-frontend/.env
-
-# =========================
-# Build outputs
-# =========================
-dist/
-build/
-frontend/build/
-backend/dist/
-
-# =========================
-# Logs
-# =========================
-logs/
+# ========================
+# LOGS
+# ========================
+logs
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# =========================
-# Runtime data
-# =========================
-pids/
-*.pid
-*.seed
-*.pid.lock
-
-# =========================
-# Coverage (testing)
-# =========================
+# ========================
+# BUILD OUTPUTS
+# ========================
+dist/
+build/
+out/
+.vite/
 coverage/
 
-# =========================
-# React / Vite / CRA caches
-# =========================
-frontend/.vite/
-frontend/.cache/
-.vite/
-.cache/
+# ========================
+# FRONTEND (React/Vite)
+# ========================
+client/dist/
+client/build/
+client/node_modules/
 
-# =========================
-# OS files
-# =========================
+# ========================
+# BACKEND (Node/Express)
+# ========================
+server/dist/
+server/build/
+server/node_modules/
+
+# ========================
+# DATABASE
+# ========================
+*.sqlite
+*.db
+
+# ========================
+# OS FILES
+# ========================
 .DS_Store
 Thumbs.db
 
-# =========================
-# IDE / Editor
-# =========================
+# ========================
+# IDE
+# ========================
 .vscode/
 .idea/
-*.swp
-*.swo
 
-# =========================
-# Uploads / local storage
-# =========================
-uploads/
-backend/uploads/
-tmp/
+# ========================
+# OPTIONAL: PYTHON (if you use AI later)
+# ========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
 
-# =========================
-# MongoDB local files (if used locally)
-# =========================
-*.lock
-mongod.lock
-db/
+# ========================
+# TEST / COVERAGE
+# ========================
+coverage/
 
-# =========================
-# Testing / env extras
-# =========================
-.env.test
-.env.local
-.env.development.local
-.env.production.local
-
+# ========================
+# DEBUG / TEMP
+# ========================
+*.tmp
+*.temp
 
 readme.md
