@@ -9,7 +9,14 @@ function App() {
             .catch((err) => console.log(err));
     }, []);
 
-    return <h1>Frontend</h1>;
+    return (
+        <>
+            <h1>Frontend</h1>
+            <h1 className="text-4xl font-bold text-blue-500">
+                Tailwind is working
+            </h1>
+        </>
+    );
 }
 
 export default App;
