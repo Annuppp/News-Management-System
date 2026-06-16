@@ -1,21 +1,20 @@
-import { useEffect } from "react";
-import axios from "axios";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Home from "./pages/Home.jsx";
 
 function App() {
-    useEffect(() => {
-        axios
-            .get("/api/test")
-            .then((res) => console.log(res.data))
-            .catch((err) => console.log(err));
-    }, []);
-
     return (
-        <>
-            <h1>Frontend</h1>
-            <h1 className="text-4xl font-bold text-blue-500">
-                Tailwind is working
-            </h1>
-        </>
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<Home />} />
+
+                <Route path="/login" element={<Login />} />
+
+                <Route path="/register" element={<Register />} />
+            </Routes>
+        </BrowserRouter>
     );
 }
 
