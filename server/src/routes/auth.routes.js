@@ -7,7 +7,7 @@ const authRouter = Router();
 authRouter.post("/register", authController.registerUser);
 
 // Login User
-authRouter.get("/login", authController.login);
+authRouter.post("/login", authController.login);
 
 // Identifying the user from token
 authRouter.get("/getMe", authController.getMe);
@@ -19,6 +19,6 @@ authRouter.post("/rotateTokens", authController.rotateTokens);
 authRouter.get("/logout", authController.logout);
 
 // LogoutAll
-authRouter.get("logoutAll", authController.logoutAll);
+authRouter.get("/logoutAll", authController.logoutAll);
 
 export default authRouter;

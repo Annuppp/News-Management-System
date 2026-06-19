@@ -102,6 +102,8 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log("login attempt for email", email);
+
         const user = await userModel.findOne({
             email,
         });
@@ -112,9 +114,11 @@ export const login = async (req, res) => {
             });
         }
 
-        // been getting the error where even when I'm entering wrong password, I'm getting logged in
+        console.log("USER FOUND:", user.email);
 
-        const isMatch = bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        console.log("PASSWORD MATCH:", isMatch);
 
         if (!isMatch) {
             return res.status(401).json({
@@ -156,7 +160,7 @@ export const login = async (req, res) => {
         );
 
         res.cookie("refreshToken", refreshToken, {
-            httpnOnly: true,
+            httpOnly: true,
             secure: true,
             sameSite: "strict",
             maxAge: 7 * 24 * 60 * 60 * 1000,

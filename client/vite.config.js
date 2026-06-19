@@ -7,7 +7,9 @@ export default defineConfig({
 
     server: {
         proxy: {
-            "/api": "http://localhost:3000",
+            "/user": "http://localhost:3000",
+            "/news": "http://localhost:3000",
+            "/category": "http://localhost:3000",
         },
     },
 });
