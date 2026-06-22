@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import config from "../config/config.js";
-import userModel from "../models/user.model";
+import userModel from "../models/user.model.js";
 
 // checking if the user is logged in or not
 export const authenticate = async (req, res, next) => {
