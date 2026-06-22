@@ -12,6 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 app.use(cookieParser());
+app.use("/uploads", express.static("src/uploads"));
 
 // route
 app.use("/category", categoryRouter);

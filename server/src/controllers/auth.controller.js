@@ -12,8 +12,9 @@ export const registerUser = async (req, res) => {
     try {
         // getting all the fields from the client
         const { username, email, password } = req.body;
+        const image = req.file.path;
 
-        if (!username || !email || !password) {
+        if (!username || !email || !password || !image) {
             return res.status(401).json({
                 message: "Every field is required",
             });
@@ -29,6 +30,7 @@ export const registerUser = async (req, res) => {
 
         const user = await userModel.create({
             ...req.body,
+            image,
             password: hashedPassword,
         });
 
