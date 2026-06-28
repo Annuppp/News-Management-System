@@ -8,6 +8,9 @@ function Login() {
         password: "",
     });
 
+    const [errors, setErrors] = useState({});
+    const [loading, setLoading] = useState(false);
+
     const fields = [
         {
             label: "Email",
@@ -27,14 +30,40 @@ function Login() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    const validate = () => {
+        const newErrors = {};
+
+        if (!form.email.trim()) {
+            newErrors.email = "Email is required";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+            newErrors.email = "Invalid email format";
+        }
+
+        if (!form.password) {
+            newErrors.password = "Password is required";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validate()) return;
+
+        setLoading(true);
         try {
             const res = await api.post("/user/login", form);
             console.log(res.data);
             alert("Login Successful");
         } catch (err) {
-            console.log(err);
+            setErrors({
+                server:
+                    err.response?.data?.message ||
+                    "Login failed. Please check your credentials.",
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -54,14 +83,22 @@ function Login() {
                         {...field}
                         value={form[field.name]}
                         onChange={handleChange}
+                        error={errors[field.name]}
                     />
                 ))}
 
+                {errors.server && (
+                    <p className="text-red-500 text-sm mb-4 text-center">
+                        {errors.server}
+                    </p>
+                )}
+
                 <button
                     type="submit"
-                    className="w-full bg-sky-500 text-white p-3 rounded-lg font-medium hover:bg-sky-600 transition"
+                    className="w-full bg-sky-500 text-white p-3 rounded-lg font-medium hover:bg-sky-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={loading}
                 >
-                    Login
+                    {loading ? "Logging in..." : "Login"}
                 </button>
             </form>
         </div>
