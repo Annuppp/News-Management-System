@@ -7,6 +7,7 @@ import Home from "./pages/Home.jsx";
 import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import VerifyOTP from "./pages/VerifyOtp.jsx";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                 <Route element={<AuthLayout />}>
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
+                    <Route path="/verify-otp" element={<VerifyOTP />} />
                 </Route>
 
                 <Route element={<MainLayout />}>

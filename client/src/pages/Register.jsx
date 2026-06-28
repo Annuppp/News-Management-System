@@ -1,8 +1,11 @@
 import { useState } from "react";
 import api from "../services/api";
 import InputField from "../components/InputField";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+    const navigate = useNavigate();
+
     const [form, setForm] = useState({
         username: "",
         email: "",
@@ -106,7 +109,8 @@ function Register() {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            alert("Registered Successfully");
+            alert("Registered Successfully! Please check your email for OTP.");
+            navigate("/verify-otp");
         } catch (err) {
             setErrors({
                 server:
