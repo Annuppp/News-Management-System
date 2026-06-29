@@ -6,6 +6,7 @@ function Login() {
     const [form, setForm] = useState({
         email: "",
         password: "",
+        rememberMe: false,
     });
 
     const [errors, setErrors] = useState({});
@@ -30,7 +31,8 @@ function Login() {
     ];
 
     const handleChange = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
+        const { name, value, type, checked } = e.target;
+        setForm({ ...form, [name]: type === "checkbox" ? checked : value });
     };
 
     const validate = () => {
@@ -89,6 +91,23 @@ function Login() {
                         error={errors[field.name]}
                     />
                 ))}
+
+                <div className="flex items-center mb-4">
+                    <input
+                        type="checkbox"
+                        id="rememberMe"
+                        name="rememberMe"
+                        checked={form.rememberMe}
+                        onChange={handleChange}
+                        className="w-4 h-4 text-sky-400 border-gray-300 rounded focus:ring-sky-500"
+                    />
+                    <label
+                        htmlFor="rememberMe"
+                        className="ml-2 text-sm text-gray-600"
+                    >
+                        Remember me
+                    </label>
+                </div>
 
                 {errors.server && (
                     <p className="text-red-500 text-sm mb-4 text-center">

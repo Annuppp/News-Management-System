@@ -107,13 +107,15 @@ export const login = async (req, res) => {
             });
         }
 
+        const refreshTokenExpiry = rememberMe ? "30d" : "7d";
+
         const refreshToken = jwt.sign(
             {
                 id: user._id,
             },
             config.REFRESH_TOKEN_SECRET,
             {
-                expiresIn: "7d",
+                expiresIn: refreshTokenExpiry,
             },
         );
 
@@ -140,11 +142,15 @@ export const login = async (req, res) => {
             },
         );
 
+        const cookieMaxAge = rememberMe
+            ? 30 * 24 * 60 * 60 * 1000
+            : 7 * 24 * 60 * 60 * 1000;
+
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: cookieMaxAge,
         });
 
         res.status(200).json({
