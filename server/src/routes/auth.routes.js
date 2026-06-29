@@ -29,4 +29,10 @@ authRouter.get("/logoutAll", authController.logoutAll);
 //verify Email
 authRouter.get("/verify-email", authController.verifyEmail);
 
+// Forgot password
+authRouter.post("/forgot-password", authController.forgotPassword);
+
+// Reset password
+authRouter.post("/reset-password", authController.resetPassword);
+
 export default authRouter;

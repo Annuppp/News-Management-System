@@ -432,3 +432,97 @@ export const verifyEmail = async (req, res) => {
         });
     }
 };
+
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await userModel.findOne({ email });
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found with this email",
+            });
+        }
+
+        const otp = generateOTP();
+
+        const html = getOtpHtml(otp);
+
+        const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+        await otpModel.create({
+            email,
+            user: user._id,
+            otpHash,
+        });
+
+        await sendEmail(
+            email,
+            "Password Reset OTP",
+            `Your OTP code is ${otp}`,
+            html,
+        );
+
+        res.status(200).json({
+            message: "OTP sent to your email",
+        });
+    } catch (err) {
+        res.status(400).json({
+            message: "Error sending OTP",
+            error: err.message,
+        });
+    }
+};
+
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({
+                message: "Email, OTP and new password are required",
+            });
+        }
+
+        const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+
+        const otpDoc = await otpModel.findOne({
+            email,
+            otpHash,
+        });
+
+        if (!otpDoc) {
+            return res.status(400).json({
+                message: "Invalid or expired OTP",
+            });
+        }
+
+        const user = await userModel.findById(otpDoc.user);
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await userModel.findByIdAndUpdate(user._id, {
+            password: hashedPassword,
+        });
+
+        await otpModel.deleteMany({
+            user: otpDoc.user,
+        });
+
+        res.status(200).json({
+            message: "Password reset successfully",
+        });
+    } catch (err) {
+        res.status(400).json({
+            message: "Error resetting password",
+            error: err.message,
+        });
+    }
+};

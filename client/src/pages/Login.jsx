@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../services/api";
 import InputField from "../components/InputField";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
     const [form, setForm] = useState({
@@ -12,6 +13,8 @@ function Login() {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
+    const navigate = useNavigate();
 
     const fields = [
         {
@@ -92,21 +95,30 @@ function Login() {
                     />
                 ))}
 
-                <div className="flex items-center mb-4">
-                    <input
-                        type="checkbox"
-                        id="rememberMe"
-                        name="rememberMe"
-                        checked={form.rememberMe}
-                        onChange={handleChange}
-                        className="w-4 h-4 text-sky-400 border-gray-300 rounded focus:ring-sky-500"
-                    />
-                    <label
-                        htmlFor="rememberMe"
-                        className="ml-2 text-sm text-gray-600"
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="rememberMe"
+                            name="rememberMe"
+                            checked={form.rememberMe}
+                            onChange={handleChange}
+                            className="w-4 h-4 text-sky-400 border-gray-300 rounded focus:ring-sky-500"
+                        />
+                        <label
+                            htmlFor="rememberMe"
+                            className="ml-2 text-sm text-gray-600"
+                        >
+                            Remember me
+                        </label>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => navigate("/forgot-password")}
+                        className="text-sky-500 hover:text-sky-600 text-sm"
                     >
-                        Remember me
-                    </label>
+                        Forgot Password?
+                    </button>
                 </div>
 
                 {errors.server && (
