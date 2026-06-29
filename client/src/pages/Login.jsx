@@ -10,6 +10,7 @@ function Login() {
 
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
 
     const fields = [
         {
@@ -20,9 +21,11 @@ function Login() {
         },
         {
             label: "Password",
-            type: "password",
+            type: showPassword ? "text" : "password",
             placeholder: "Enter your password",
             name: "password",
+            showPassword: true,
+            onTogglePassword: () => setShowPassword(!showPassword),
         },
     ];
 

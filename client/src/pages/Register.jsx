@@ -14,6 +14,8 @@ function Register() {
     });
 
     const [errors, setErrors] = useState({});
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
@@ -34,15 +36,20 @@ function Register() {
         },
         {
             label: "Password",
-            type: "password",
+            type: showPassword ? "text" : "password",
             placeholder: "Enter your password",
             name: "password",
+            showPassword: true,
+            onTogglePassword: () => setShowPassword(!showPassword),
         },
         {
             label: "Confirm Password",
-            type: "password",
+            type: showConfirmPassword ? "text" : "password",
             placeholder: "Re-enter your password",
             name: "confirmPassword",
+            showPassword: true,
+            onTogglePassword: () =>
+                setShowConfirmPassword(!showConfirmPassword),
         },
     ];
 
