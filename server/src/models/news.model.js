@@ -18,6 +18,16 @@ const newsSchema = new mongoose.Schema(
             ref: "Category",
             required: true,
         },
+        author: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            required: true,
+        },
+        status: {
+            type: String,
+            enum: ["draft", "published", "archived"],
+            default: "draft",
+        },
     },
     { timestamps: true },
 );

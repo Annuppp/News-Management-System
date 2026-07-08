@@ -4,6 +4,7 @@ import categoryRouter from "./routes/category.routes.js";
 import newsRouter from "./routes/news.routes.js";
 import cookieParser from "cookie-parser";
 import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
 
 const app = express();
 
@@ -18,5 +19,6 @@ app.use("/uploads", express.static("src/uploads"));
 app.use("/category", categoryRouter);
 app.use("/news", newsRouter);
 app.use("/user", authRouter);
+app.use("/user", userRouter);
 
 export default app;

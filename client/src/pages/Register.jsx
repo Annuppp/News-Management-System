@@ -116,8 +116,8 @@ function Register() {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            alert("Registered Successfully! Please check your email for OTP.");
-            navigate("/verify-otp");
+            alert("Registered Successfully! Please login."); // changed the message here
+            navigate("/login"); // changed the redirecting path
         } catch (err) {
             setErrors({
                 server:

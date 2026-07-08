@@ -62,8 +62,14 @@ function Login() {
         setLoading(true);
         try {
             const res = await api.post("/user/login", form);
-            console.log(res.data);
-            alert("Login Successful");
+
+            // added the lines here
+            localStorage.setItem("accessToken", res.data.accessToken);
+            localStorage.setItem("user", JSON.stringify(res.data.user));
+            navigate("/"); // will have to remove these lines when email part is done
+
+            // console.log(res.data);
+            // alert("Login Successful");
         } catch (err) {
             setErrors({
                 server:

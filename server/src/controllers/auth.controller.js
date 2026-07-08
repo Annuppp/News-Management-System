@@ -32,6 +32,7 @@ export const registerUser = async (req, res) => {
             ...req.body,
             image,
             password: hashedPassword,
+            isVerified: true, // added this line
         });
 
         if (!user) {
@@ -40,22 +41,22 @@ export const registerUser = async (req, res) => {
             });
         }
 
-        const otp = generateOTP();
-        const html = getOtpHtml(otp);
+        // const otp = generateOTP();
+        // const html = getOtpHtml(otp);
 
-        const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-        await otpModel.create({
-            email,
-            user: user._id,
-            otpHash,
-        });
+        // const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+        // await otpModel.create({
+        //     email,
+        //     user: user._id,
+        //     otpHash,
+        // });
 
-        await sendEmail(
-            email,
-            "OTP verification",
-            `Your OTP code is ${otp}`,
-            html,
-        );
+        // await sendEmail(
+        //     email,
+        //     "OTP verification",
+        //     `Your OTP code is ${otp}`,
+        //     html,
+        // );
 
         res.status(201).json({
             message: "User has been created",
@@ -75,9 +76,7 @@ export const registerUser = async (req, res) => {
 
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        console.log("login attempt for email", email);
+        const { email, password, rememberMe } = req.body;
 
         const user = await userModel.findOne({
             email,
@@ -89,17 +88,13 @@ export const login = async (req, res) => {
             });
         }
 
-        if (!user.verified) {
-            return res.status(401).json({
-                message: "Email not verified",
-            });
-        }
-
-        console.log("USER FOUND:", user.email);
+        // if (!user.verified) {
+        //     return res.status(401).json({
+        //         message: "Email not verified",
+        //     });
+        // }
 
         const isMatch = await bcrypt.compare(password, user.password);
-
-        console.log("PASSWORD MATCH:", isMatch);
 
         if (!isMatch) {
             return res.status(401).json({
@@ -163,8 +158,8 @@ export const login = async (req, res) => {
             accessToken,
         });
     } catch (err) {
-        res.status(404).json({
-            message: "Error logging in the user",
+        res.status(500).json({
+            message: "Error logging in",
             error: err.message,
         });
     }

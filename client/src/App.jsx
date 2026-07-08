@@ -4,6 +4,7 @@ import AuthLayout from "./layouts/AuthLayout.jsx";
 import MainLayout from "./layouts/MainLayout.jsx";
 
 import Home from "./pages/Home.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
 import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
@@ -28,6 +29,7 @@ function App() {
 
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                 </Route>
             </Routes>
         </BrowserRouter>
