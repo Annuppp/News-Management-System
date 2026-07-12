@@ -9,7 +9,7 @@ const newsRouter = Router();
 newsRouter.post(
     "/create",
     authenticate,
-    isAdmin,
+    // isAdmin,
     upload.single("image"),
     newsController.createNews,
 );
@@ -24,7 +24,7 @@ newsRouter.get("/:id", newsController.getNewsById);
 newsRouter.patch(
     "/update/:id",
     authenticate,
-    isAdmin,
+    // isAdmin,
     upload.single("image"),
     newsController.updateNews,
 );
@@ -33,7 +33,7 @@ newsRouter.patch(
 newsRouter.delete(
     "/delete/:id",
     authenticate,
-    isAdmin,
+    // isAdmin,
     newsController.deleteNews,
 );
 

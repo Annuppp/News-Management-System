@@ -4,6 +4,7 @@ export const createNews = async (req, res) => {
     try {
         const news = await newsModel.create({
             ...req.body,
+            author: req.user._id,
             image: req.file?.path,
         });
 

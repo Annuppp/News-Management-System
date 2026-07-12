@@ -11,6 +11,7 @@ import Register from "./pages/Register.jsx";
 import VerifyOTP from "./pages/VerifyOtp.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import CreateNews from "./pages/CreateNews.jsx";
 
 function App() {
     return (
@@ -30,6 +31,7 @@ function App() {
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/create-news" element={<CreateNews />} />
                 </Route>
             </Routes>
         </BrowserRouter>
