@@ -44,7 +44,8 @@ export const getNewsById = async (req, res) => {
     try {
         const news = await newsModel
             .findById(req.params.id)
-            .populate("category");
+            .populate("category")
+            .populate("author", "username email");
 
         if (!news) {
             return res.status(404).json({
@@ -74,7 +75,8 @@ export const updateNews = async (req, res) => {
                     runValidators: true,
                 },
             )
-            .populate("category");
+            .populate("category")
+            .populate("author", "username email");
 
         if (!news) {
             return res.status(404).json({
@@ -95,7 +97,10 @@ export const updateNews = async (req, res) => {
 
 export const deleteNews = async (req, res) => {
     try {
-        const news = await newsModel.findByIdAndDelete(req.params.id);
+        const news = await newsModel
+            .findByIdAndDelete(req.params.id)
+            .populate("category")
+            .populate("author", "username email");
 
         if (!news) {
             return res.status(404).json({

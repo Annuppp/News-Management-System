@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Home() {
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchNews();
@@ -41,7 +43,8 @@ function Home() {
                     {news.map((item) => (
                         <div
                             key={item._id}
-                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
+                            onClick={() => navigate(`/news/${item._id}`)}
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
                         >
                             {item.image && (
                                 <img
