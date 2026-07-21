@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
+import ReactMarkdown from "react-markdown";
 
 const NewsDetail = () => {
     const { id } = useParams();
@@ -77,9 +78,9 @@ const NewsDetail = () => {
 
             {/* Full Content */}
             <div className="prose max-w-none">
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                <ReactMarkdown className="text-gray-700 leading-relaxed">
                     {news.content}
-                </p>
+                </ReactMarkdown>
             </div>
 
             {/* Status Badge */}

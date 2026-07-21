@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import MDEditor from "@uiw/react-md-editor";
 
 const CreateNews = () => {
     const navigate = useNavigate();
@@ -111,13 +112,18 @@ const CreateNews = () => {
                     <label className="block text-gray-700 font-semibold mb-2">
                         Content
                     </label>
-                    <textarea
-                        name="content"
-                        value={formData.content}
-                        onChange={handleChange}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500 h-40"
-                        required
-                    />
+                    <div data-color-mode="light">
+                        <MDEditor
+                            value={formData.content}
+                            onChange={(value) =>
+                                setFormData({
+                                    ...formData,
+                                    content: value || "",
+                                })
+                            }
+                            height={200}
+                        />
+                    </div>
                 </div>
 
                 <div className="mb-4">
