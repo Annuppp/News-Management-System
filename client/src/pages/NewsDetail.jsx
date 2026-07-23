@@ -78,9 +78,9 @@ const NewsDetail = () => {
 
             {/* Full Content */}
             <div className="prose max-w-none">
-                <ReactMarkdown className="text-gray-700 leading-relaxed">
-                    {news.content}
-                </ReactMarkdown>
+                <div className="text-gray-700 leading-relaxed">
+                    <ReactMarkdown>{news.content}</ReactMarkdown>
+                </div>
             </div>
 
             {/* Status Badge */}
