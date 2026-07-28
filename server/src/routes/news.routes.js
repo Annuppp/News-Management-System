@@ -1,9 +1,9 @@
-import { Router } from "express";
+import express from "express";
 import * as newsController from "../controllers/news.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 import { authenticate, isAdmin } from "../middleware/auth.middleware.js";
 
-const newsRouter = Router();
+const newsRouter = express.Router();
 
 // 1. create News
 newsRouter.post(

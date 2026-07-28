@@ -1,8 +1,8 @@
-import { Router } from "express";
+import express from "express";
 import * as categoryController from "../controllers/category.controller.js";
 import { authenticate, isAdmin } from "../middleware/auth.middleware.js";
 
-const categoryRoutes = Router();
+const categoryRoutes = express.Router();
 
 // 1. Create category
 categoryRoutes.post(

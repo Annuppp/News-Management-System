@@ -1,8 +1,8 @@
-import { Router } from "express";
+import express from "express";
 import * as authController from "../controllers/auth.controller.js";
 import { upload } from "../middleware/multer.middleware.js";
 
-const authRouter = Router();
+const authRouter = express.Router();
 
 // Register User
 authRouter.post(
