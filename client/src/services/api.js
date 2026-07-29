@@ -1,9 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "/",
     baseURL: "http://localhost:3000",
-    withCredentials: true,
+    withCredentials: false,
 });
 
 // Add token interceptor to automatically include access token in requests

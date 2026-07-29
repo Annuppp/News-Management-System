@@ -2,10 +2,10 @@ import express from "express";
 import * as categoryController from "../controllers/category.controller.js";
 import { authenticate, isAdmin } from "../middleware/auth.middleware.js";
 
-const categoryRoutes = express.Router();
+const categoryRouter = express.Router();
 
 // 1. Create category
-categoryRoutes.post(
+categoryRouter.post(
     "/create",
     authenticate,
     isAdmin,
@@ -13,13 +13,13 @@ categoryRoutes.post(
 );
 
 // 2. Get all categories
-categoryRoutes.get("/getAll", categoryController.getAllCategory);
+categoryRouter.get("/getAll", categoryController.getAllCategory);
 
 // 3. Get Single category
-categoryRoutes.get("/get/:id", categoryController.getCategoryById);
+categoryRouter.get("/get/:id", categoryController.getCategoryById);
 
 // 4. Update category
-categoryRoutes.patch(
+categoryRouter.patch(
     "/update/:id",
     authenticate,
     isAdmin,
@@ -27,11 +27,11 @@ categoryRoutes.patch(
 );
 
 // 5. Delete category
-categoryRoutes.delete(
+categoryRouter.delete(
     "/delete/:id",
     authenticate,
     isAdmin,
     categoryController.deleteCategory,
 );
 
-export default categoryRoutes;
+export default categoryRouter;
