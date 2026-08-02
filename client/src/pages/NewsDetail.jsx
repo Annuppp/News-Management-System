@@ -8,6 +8,20 @@ const NewsDetail = () => {
     const [news, setNews] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+    const [currentUser, setCurrentUser] = useState(null);
+
+    useEffect(() => {
+        fetchCurrentUser();
+    }, []);
+
+    const fetchCurrentUser = async () => {
+        try {
+            const res = await api.get("/user/getMe");
+            setCurrentUser(res.data.user);
+        } catch (err) {
+            console.error("Error fetching the current user", err);
+        }
+    };
 
     useEffect(() => {
         fetchNewsDetail();
@@ -21,6 +35,18 @@ const NewsDetail = () => {
             console.error("Error fetching news:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    // deleting the news
+    const handleDelete = async () => {
+        if (!confirm("Are you sure you want to delete this news?")) return;
+
+        try {
+            await api.delete(`/news/delete/${id}`);
+            navigate("/");
+        } catch (err) {
+            console.error("Error deleting news:", err);
         }
     };
 
@@ -82,6 +108,25 @@ const NewsDetail = () => {
                     <ReactMarkdown>{news.content}</ReactMarkdown>
                 </div>
             </div>
+
+            {currentUser &&
+                news.author &&
+                currentUser.email === news.author.email && (
+                    <div className="mt-8 flex gap-4">
+                        <button
+                            onClick={() => navigate(`/news/edit/${id}`)}
+                            className="bg-sky-500 text-white px-4 py-2 rounded"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="bg-red-500 text-white px-4 py-2 rounded"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                )}
 
             {/* Status Badge */}
             <div className="mt-8">
