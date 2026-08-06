@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import MDEditor from "@uiw/react-md-editor";
 
@@ -20,7 +20,23 @@ const EditNews = () => {
 
     useEffect(() => {
         fetchCategories();
+        fetchNews();
     }, []);
+
+    const fetchNews = async () => {
+        try {
+            const res = await api.get(`/news/${id}`);
+            setFormData({
+                title: res.data.title,
+                content: res.data.content,
+                category: res.data.category._id,
+                status: res.data.status,
+                image: "",
+            });
+        } catch (err) {
+            console.error("Error fetching news:", err);
+        }
+    };
 
     const fetchCategories = async () => {
         try {
@@ -53,14 +69,14 @@ const EditNews = () => {
                 formDataToSend.append("image", formData.image);
             }
 
-            const res = await api.post("/news/create", formDataToSend, {
+            const res = await api.patch(`/news/update/${id}`, formDataToSend, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            navigate("/dashboard");
+            navigate(`/news/${id}`);
         } catch (err) {
-            console.error("Error creating news:", err);
+            console.error("Error updating news:", err);
         } finally {
             setLoading(false);
         }
@@ -72,7 +88,7 @@ const EditNews = () => {
 
     return (
         <div className="p-8">
-            <h1 className="text-3xl font-bold mb-6">Create News</h1>
+            <h1 className="text-3xl font-bold mb-6">Edit News</h1>
 
             <form onSubmit={handleSubmit} className="max-w-2xl">
                 <div className="mb-4">
