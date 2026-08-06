@@ -165,11 +165,11 @@ const EditNews = () => {
                     disabled={loading}
                     className="bg-sky-500 hover:bg-sky-600 text-white px-6 py-3 rounded-lg transition disabled:opacity-50"
                 >
-                    {loading ? "Creating..." : "Create News"}
+                    {loading ? "Updating..." : "Update News"}
                 </button>
             </form>
         </div>
     );
 };
 
-export default CreateNews;
+export default EditNews;

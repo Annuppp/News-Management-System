@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
 import CreateNews from "./pages/CreateNews.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
+import EditNews from "./pages/EditNews.jsx";
 
 function App() {
     return (
@@ -34,6 +35,7 @@ function App() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/create-news" element={<CreateNews />} />
                     <Route path="/news/:id" element={<NewsDetail />} />
+                    <Route path="/news/edit/:id" element={<EditNews />} />
                 </Route>
             </Routes>
         </BrowserRouter>
