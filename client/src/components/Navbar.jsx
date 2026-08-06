@@ -1,9 +1,9 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Home, LayoutDashboard, LogOut, Plus } from "lucide-react";
 
 function Navbar() {
-    // added these lines for email
+    const navigate = useNavigate();
     const [user, setUser] = useState(null);
 
     useEffect(() => {
@@ -22,7 +22,13 @@ function Navbar() {
 
     return (
         <nav className="bg-slate-800 text-white p-4 shadow-lg flex justify-between items-center">
-            <h2 className="font-bold text-lg">📰 NewsApp</h2>
+            <div
+                onClick={() => navigate("/")}
+                className="font-bold text-lg hover:text-sky-400 transition cursor-pointer"
+            >
+                📰 NewsApp
+            </div>
+
             <div className="flex gap-6 items-center">
                 <Link
                     to="/"
