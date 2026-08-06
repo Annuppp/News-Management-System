@@ -8,15 +8,39 @@ function Home() {
 
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchNews(1);
+        fetchCategories();
     }, []);
 
+    useEffect(() => {
+        fetchNews(1);
+    }, [selectedCategory]);
+
+    const fetchCategories = async () => {
+        try {
+            const res = await api.get("/category/getAll");
+            setCategories(res.data);
+        } catch (err) {
+            console.error("Error fetching categories:", err);
+        }
+    };
     const fetchNews = async (page = 1) => {
         try {
-            const res = await api.get(`/news?page=${page}&limit=5`);
+            setLoading(true);
+
+            const categoryQuery = selectedCategory
+                ? `&category=${selectedCategory}`
+                : "";
+
+            const res = await api.get(
+                `/news?page=${page}&limit=5${categoryQuery}`,
+            );
             // Filter only published news
             const publishedNews = res.data.news.filter(
                 (item) => item.status === "published",
@@ -31,6 +55,10 @@ function Home() {
         }
     };
 
+    const handleCategoryClick = (categoryId) => {
+        setSelectedCategory(categoryId);
+    };
+
     if (loading) {
         return <div className="p-8">Loading...</div>;
     }
@@ -38,6 +66,32 @@ function Home() {
     return (
         <div className="p-8">
             <h1 className="text-3xl font-bold mb-6">Latest News</h1>
+
+            <div className="flex flex-wrap gap-2 mb-6">
+                <button
+                    onClick={() => handleCategoryClick(null)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                        selectedCategory === null
+                            ? "bg-sky-500 text-white"
+                            : "bg-gray-100 text-gray-700 hover:bg-sky-100"
+                    }`}
+                >
+                    All
+                </button>
+                {categories.map((category) => (
+                    <button
+                        key={category._id}
+                        onClick={() => handleCategoryClick(category._id)}
+                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                            selectedCategory === category._id
+                                ? "bg-sky-500 text-white"
+                                : "bg-gray-100 text-gray-700 hover:bg-sky-100"
+                        }`}
+                    >
+                        {category.name}
+                    </button>
+                ))}
+            </div>
 
             {news.length === 0 ? (
                 <div className="text-center py-12">
