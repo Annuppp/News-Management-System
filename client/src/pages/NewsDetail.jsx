@@ -21,6 +21,7 @@ const NewsDetail = () => {
             setCurrentUser(res.data.user);
         } catch (err) {
             console.error("Error fetching the current user", err);
+            setCurrentUser(null); // Set to null on error
         }
     };
 

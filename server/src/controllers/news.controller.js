@@ -19,27 +19,6 @@ export const createNews = async (req, res) => {
     }
 };
 
-export const getAllNews = async (req, res) => {
-    try {
-        const filter = {};
-
-        if (req.query.category) {
-            filter.category = req.query.category;
-        }
-
-        const news = await newsModel
-            .find(filter)
-            .populate("category")
-            .sort({ createdAt: -1 });
-
-        res.status(200).json(news);
-    } catch (error) {
-        res.status(500).json({
-            message: error.message,
-        });
-    }
-};
-
 export const getNewsById = async (req, res) => {
     try {
         const news = await newsModel
@@ -110,6 +89,43 @@ export const deleteNews = async (req, res) => {
 
         res.status(200).json({
             message: "News deleted successfully",
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: error.message,
+        });
+    }
+};
+
+export const getAllNews = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page - 1) * limit;
+
+        const filter = {};
+        if (req.query.category) {
+            filter.category = req.query.category;
+        }
+
+        const news = await newsModel
+            .find(filter)
+            .populate("category")
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await newsModel.countDocuments(filter);
+        const totalPages = Math.ceil(total / limit) || 1;
+
+        res.status(200).json({
+            news,
+            pagination: {
+                currentPage: page,
+                totalPages: totalPages,
+                totalItems: total,
+                itemsPerPage: limit,
+            },
         });
     } catch (error) {
         res.status(500).json({

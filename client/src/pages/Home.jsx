@@ -3,22 +3,27 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function Home() {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+
     const [news, setNews] = useState([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchNews();
+        fetchNews(1);
     }, []);
 
-    const fetchNews = async () => {
+    const fetchNews = async (page = 1) => {
         try {
-            const res = await api.get("/news");
+            const res = await api.get(`/news?page=${page}&limit=5`);
             // Filter only published news
-            const publishedNews = res.data.filter(
+            const publishedNews = res.data.news.filter(
                 (item) => item.status === "published",
             );
             setNews(publishedNews);
+            setCurrentPage(res.data.pagination.currentPage);
+            setTotalPages(res.data.pagination.totalPages);
         } catch (err) {
             console.error("Error fetching news:", err);
         } finally {
@@ -75,6 +80,43 @@ function Home() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {news.length > 0 && (
+                <div className="flex justify-center items-center gap-2 mt-6">
+                    <button
+                        onClick={() => fetchNews(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-4 py-2 bg-sky-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-sky-600 transition"
+                    >
+                        Previous
+                    </button>
+
+                    {/* Page numbers */}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                        (pageNum) => (
+                            <button
+                                key={pageNum}
+                                onClick={() => fetchNews(pageNum)}
+                                className={`w-10 h-10 rounded-lg font-medium transition ${
+                                    currentPage === pageNum
+                                        ? "bg-sky-500 text-white"
+                                        : "bg-white text-gray-700 hover:bg-sky-100"
+                                }`}
+                            >
+                                {pageNum}
+                            </button>
+                        ),
+                    )}
+
+                    <button
+                        onClick={() => fetchNews(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-4 py-2 bg-sky-500 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-sky-600 transition"
+                    >
+                        Next
+                    </button>
                 </div>
             )}
         </div>
