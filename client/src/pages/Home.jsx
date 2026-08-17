@@ -41,11 +41,7 @@ function Home() {
             const res = await api.get(
                 `/news?page=${page}&limit=5${categoryQuery}`,
             );
-            // Filter only published news
-            const publishedNews = res.data.news.filter(
-                (item) => item.status === "published",
-            );
-            setNews(publishedNews);
+            setNews(res.data.news);
             setCurrentPage(res.data.pagination.currentPage);
             setTotalPages(res.data.pagination.totalPages);
         } catch (err) {

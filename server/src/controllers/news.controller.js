@@ -103,7 +103,7 @@ export const getAllNews = async (req, res) => {
         const limit = parseInt(req.query.limit) || 5;
         const skip = (page - 1) * limit;
 
-        const filter = {};
+        const filter = { status: "published" };
         if (req.query.category) {
             filter.category = req.query.category;
         }
