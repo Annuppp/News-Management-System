@@ -21,7 +21,13 @@ const NewsDetail = () => {
             setCurrentUser(res.data.user);
         } catch (err) {
             console.error("Error fetching the current user", err);
-            setCurrentUser(null); // Set to null on error
+            // Fallback to localStorage if API fails
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                setCurrentUser(JSON.parse(storedUser));
+            } else {
+                setCurrentUser(null);
+            }
         }
     };
 

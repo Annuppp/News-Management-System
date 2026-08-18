@@ -108,6 +108,13 @@ export const getAllNews = async (req, res) => {
             filter.category = req.query.category;
         }
 
+        if (req.query.search) {
+            filter.$or = [
+                { title: { $regex: req.query.search, $options: "i" } },
+                { content: { $regex: req.query.search, $options: "i" } },
+            ];
+        }
+
         const news = await newsModel
             .find(filter)
             .populate("category")

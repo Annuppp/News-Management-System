@@ -208,7 +208,7 @@ export const getMe = async (req, res) => {
 
 export const rotateTokens = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
         if (!refreshToken) {
             return res.status(404).json({

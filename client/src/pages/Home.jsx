@@ -11,15 +11,31 @@ function Home() {
 
     const [categories, setCategories] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSearching, setIsSearching] = useState(false);
 
     const navigate = useNavigate();
+
+    const [debouncedSearch, setDebouncedSearch] = useState("");
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setIsSearching(true);
+        }, 100);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        fetchNews(1, true);
+    }, [debouncedSearch]);
 
     useEffect(() => {
         fetchCategories();
     }, []);
 
     useEffect(() => {
-        fetchNews(1);
+        fetchNews(1, false);
     }, [selectedCategory]);
 
     const fetchCategories = async () => {
@@ -30,16 +46,24 @@ function Home() {
             console.error("Error fetching categories:", err);
         }
     };
-    const fetchNews = async (page = 1) => {
+    const fetchNews = async (page = 1, isSearch = false) => {
         try {
-            setLoading(true);
+            if (isSearch) {
+                setIsSearching(true);
+            } else {
+                setLoading(true);
+            }
 
             const categoryQuery = selectedCategory
                 ? `&category=${selectedCategory}`
                 : "";
 
+            const searchQueryStr = debouncedSearch
+                ? `&search=${debouncedSearch}`
+                : "";
+
             const res = await api.get(
-                `/news?page=${page}&limit=5${categoryQuery}`,
+                `/news?page=${page}&limit=5${categoryQuery}${searchQueryStr}`,
             );
             setNews(res.data.news);
             setCurrentPage(res.data.pagination.currentPage);
@@ -47,7 +71,11 @@ function Home() {
         } catch (err) {
             console.error("Error fetching news:", err);
         } finally {
-            setLoading(false);
+            if (isSearch) {
+                setIsSearching(false);
+            } else {
+                setLoading(false);
+            }
         }
     };
 
@@ -87,6 +115,23 @@ function Home() {
                         {category.name}
                     </button>
                 ))}
+            </div>
+
+            <div className="mb-6 flex gap-2">
+                <input
+                    type="text"
+                    placeholder="Search news..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+
+                <button
+                    onClick={() => fetchNews(1)}
+                    className="px-6 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition"
+                >
+                    Search
+                </button>
             </div>
 
             {news.length === 0 ? (
