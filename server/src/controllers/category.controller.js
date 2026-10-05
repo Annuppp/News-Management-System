@@ -29,12 +29,18 @@ export const createCategory = async (req, res) => {
 
 export const getAllCategory = async (req, res) => {
     try {
-        const categories = await categoryModel.find();
+        let categories = await categoryModel.find().sort({ name: 1 });
 
-        if (!categories) {
-            return res.status(400).json({
-                message: "Unable to find the categories",
-            });
+        if (!categories || categories.length === 0) {
+            await categoryModel.insertMany([
+                { name: "Technology", description: "Latest tech trends, gadgets, AI, and software" },
+                { name: "Politics", description: "National and international political affairs" },
+                { name: "Business", description: "Finance, economy, markets, and entrepreneurship" },
+                { name: "Sports", description: "Updates and coverage from global sports" },
+                { name: "Entertainment", description: "Movies, music, culture, and lifestyle" },
+                { name: "Health", description: "Wellness, medicine, fitness, and healthcare" },
+            ]);
+            categories = await categoryModel.find().sort({ name: 1 });
         }
 
         res.status(200).json(categories);

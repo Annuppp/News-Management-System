@@ -8,7 +8,6 @@ const categoryRouter = express.Router();
 categoryRouter.post(
     "/create",
     authenticate,
-    isAdmin,
     categoryController.createCategory,
 );
 

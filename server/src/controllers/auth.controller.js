@@ -10,7 +10,7 @@ import otpModel from "../models/otp.model.js";
 
 export const registerUser = async (req, res) => {
     try {
-        const { username, email, password } = req.body;
+        const { username, email, password } = req.body || {};
         const image = req.file?.path;
 
         if (!username || !email || !password || !image) {
