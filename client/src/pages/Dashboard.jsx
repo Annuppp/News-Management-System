@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { FileText, CheckCircle, File } from "lucide-react";
 import api from "../services/api";
@@ -12,21 +12,21 @@ function Dashboard() {
     const [recentNews, setRecentNews] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, []);
-
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = useCallback(async () => {
         try {
             const res = await api.get("/user/dashboard");
-            setStats(res.data.stats);
-            setRecentNews(res.data.recentNews);
+            setStats(res.data.stats || { totalNews: 0, publishedNews: 0, draftNews: 0 });
+            setRecentNews(res.data.recentNews || []);
         } catch (err) {
             console.error("Error fetching dashboard data:", err);
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [fetchDashboardData]);
 
     if (loading) {
         return <div className="p-8">Loading...</div>;

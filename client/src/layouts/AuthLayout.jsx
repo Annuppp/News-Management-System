@@ -1,6 +1,14 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, Navigate, useLocation } from "react-router-dom";
 
 export default function AuthLayout() {
+    const token = localStorage.getItem("accessToken");
+    const location = useLocation();
+
+    // If already logged in and visiting login or register, redirect to home
+    if (token && (location.pathname === "/login" || location.pathname === "/register")) {
+        return <Navigate to="/" replace />;
+    }
+
     return (
         <div>
             <nav className="bg-slate-800 text-white p-4 shadow-lg">

@@ -58,7 +58,7 @@ function ResetPassword() {
 
         setLoading(true);
         try {
-            const res = await api.post("/user/reset-password", {
+            await api.post("/user/reset-password", {
                 email: form.email,
                 otp: form.otp,
                 newPassword: form.newPassword,

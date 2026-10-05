@@ -10,13 +10,20 @@ import otpModel from "../models/otp.model.js";
 
 export const registerUser = async (req, res) => {
     try {
-        // getting all the fields from the client
         const { username, email, password } = req.body;
-        const image = req.file.path;
+        const image = req.file?.path;
 
         if (!username || !email || !password || !image) {
-            return res.status(401).json({
-                message: "Every field is required",
+            return res.status(400).json({
+                message: "Every field is required (username, email, password, and profile image)",
+            });
+        }
+
+        const normalizedEmail = email.toLowerCase().trim();
+        const existingUser = await userModel.findOne({ email: normalizedEmail });
+        if (existingUser) {
+            return res.status(400).json({
+                message: "Email is already registered",
             });
         }
 
@@ -29,10 +36,12 @@ export const registerUser = async (req, res) => {
         }
 
         const user = await userModel.create({
-            ...req.body,
+            username: username.trim(),
+            email: normalizedEmail,
             image,
             password: hashedPassword,
-            isVerified: true, // added this line
+            role: "user",
+            verified: true, // Auto-verified when OTP flow is optional/bypassed
         });
 
         if (!user) {
@@ -41,28 +50,13 @@ export const registerUser = async (req, res) => {
             });
         }
 
-        // const otp = generateOTP();
-        // const html = getOtpHtml(otp);
-
-        // const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
-        // await otpModel.create({
-        //     email,
-        //     user: user._id,
-        //     otpHash,
-        // });
-
-        // await sendEmail(
-        //     email,
-        //     "OTP verification",
-        //     `Your OTP code is ${otp}`,
-        //     html,
-        // );
-
         res.status(201).json({
             message: "User has been created",
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
+                role: user.role,
                 verified: user.verified,
             },
         });
@@ -78,8 +72,14 @@ export const login = async (req, res) => {
     try {
         const { email, password, rememberMe } = req.body;
 
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required",
+            });
+        }
+
         const user = await userModel.findOne({
-            email,
+            email: email.toLowerCase().trim(),
         });
 
         if (!user) {
@@ -87,12 +87,6 @@ export const login = async (req, res) => {
                 message: "Invalid email or password",
             });
         }
-
-        // if (!user.verified) {
-        //     return res.status(401).json({
-        //         message: "Email not verified",
-        //     });
-        // }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
@@ -122,8 +116,8 @@ export const login = async (req, res) => {
         const session = await sessionModel.create({
             user: user._id,
             refreshTokenHash,
-            ip: req.ip,
-            userAgent: req.headers["user-agent"],
+            ip: req.ip || "127.0.0.1",
+            userAgent: req.headers["user-agent"] || "unknown",
         });
 
         const accessToken = jwt.sign(
@@ -141,21 +135,24 @@ export const login = async (req, res) => {
             ? 30 * 24 * 60 * 60 * 1000
             : 7 * 24 * 60 * 60 * 1000;
 
+        const isProd = process.env.NODE_ENV === "production";
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
             maxAge: cookieMaxAge,
         });
 
         res.status(200).json({
             message: "Logged in successfully",
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
                 role: user.role,
             },
             accessToken,
+            refreshToken,
         });
     } catch (err) {
         res.status(500).json({
@@ -170,8 +167,8 @@ export const getMe = async (req, res) => {
         const accessToken = req.headers.authorization?.split(" ")[1];
 
         if (!accessToken) {
-            return res.status(404).json({
-                message: "access token not found",
+            return res.status(401).json({
+                message: "Access token not found",
             });
         }
 
@@ -194,13 +191,15 @@ export const getMe = async (req, res) => {
         res.status(200).json({
             message: "User fetched successfully",
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
+                role: user.role,
             },
         });
     } catch (err) {
-        res.status(400).json({
-            message: "Error getting the user",
+        res.status(401).json({
+            message: "Error getting the user or token expired",
             error: err.message,
         });
     }
@@ -208,10 +207,10 @@ export const getMe = async (req, res) => {
 
 export const rotateTokens = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+        const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
         if (!refreshToken) {
-            return res.status(404).json({
+            return res.status(401).json({
                 message: "refreshToken not found",
             });
         }
@@ -221,11 +220,12 @@ export const rotateTokens = async (req, res) => {
             .update(refreshToken)
             .digest("hex");
 
-        const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
-
-        if (!decoded) {
+        let decoded;
+        try {
+            decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
+        } catch (jwtErr) {
             return res.status(401).json({
-                message: "Invalid refreshToken",
+                message: "Invalid or expired refreshToken",
             });
         }
 
@@ -243,8 +243,8 @@ export const rotateTokens = async (req, res) => {
         });
 
         if (!session) {
-            return res.status(404).json({
-                message: "Unable to find the session",
+            return res.status(401).json({
+                message: "Session expired or revoked",
             });
         }
 
@@ -260,7 +260,7 @@ export const rotateTokens = async (req, res) => {
             },
         );
 
-        // creating the refreshToken for extra security
+        // creating the new refreshToken for rotation
         const newRefreshToken = jwt.sign(
             {
                 id: user._id,
@@ -271,10 +271,11 @@ export const rotateTokens = async (req, res) => {
             },
         );
 
+        const isProd = process.env.NODE_ENV === "production";
         res.cookie("refreshToken", newRefreshToken, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
             maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
@@ -289,10 +290,13 @@ export const rotateTokens = async (req, res) => {
         res.status(200).json({
             message: "Rotated tokens successfully",
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
+                role: user.role,
             },
             accessToken,
+            refreshToken: newRefreshToken,
         });
     } catch (err) {
         res.status(400).json({
@@ -304,37 +308,30 @@ export const rotateTokens = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
+        const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
-        if (!refreshToken) {
-            return res.status(404).json({
-                message: "RefreshToken not found",
+        if (refreshToken) {
+            const refreshTokenHash = crypto
+                .createHash("sha256")
+                .update(refreshToken)
+                .digest("hex");
+
+            const session = await sessionModel.findOne({
+                refreshTokenHash,
+                revoked: false,
             });
+
+            if (session) {
+                session.revoked = true;
+                await session.save();
+            }
         }
 
-        const refreshTokenHash = crypto
-            .createHash("sha256")
-            .update(refreshToken)
-            .digest("hex");
-
-        const session = await sessionModel.findOne({
-            refreshTokenHash,
-            revoked: false,
-        });
-
-        if (!session) {
-            return res.status(401).json({
-                message: "Invalid refreshToken",
-            });
-        }
-
-        session.revoked = true;
-        await session.save();
-
+        const isProd = process.env.NODE_ENV === "production";
         res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
         });
 
         res.status(200).json({
@@ -342,7 +339,7 @@ export const logout = async (req, res) => {
         });
     } catch (err) {
         res.status(400).json({
-            message: " Error logging out the user",
+            message: "Error logging out the user",
             error: err.message,
         });
     }
@@ -350,19 +347,19 @@ export const logout = async (req, res) => {
 
 export const logoutAll = async (req, res) => {
     try {
-        const refreshToken = res.cookie.refreshToken;
+        const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
         if (!refreshToken) {
-            return res.status(404).json({
+            return res.status(400).json({
                 message: "RefreshToken not found",
             });
         }
 
         const decoded = jwt.verify(refreshToken, config.REFRESH_TOKEN_SECRET);
 
-        const session = await sessionModel.updateMany(
+        await sessionModel.updateMany(
             {
-                id: decoded.id,
+                user: decoded.id,
                 revoked: false,
             },
             {
@@ -370,18 +367,19 @@ export const logoutAll = async (req, res) => {
             },
         );
 
-        res.clearCookie(refreshToken, {
+        const isProd = process.env.NODE_ENV === "production";
+        res.clearCookie("refreshToken", {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: isProd,
+            sameSite: isProd ? "strict" : "lax",
         });
 
         res.status(200).json({
             message: "Logged out from all the devices successfully",
         });
     } catch (err) {
-        res.status(404).json({
-            message: "Error logging all the users",
+        res.status(400).json({
+            message: "Error logging out all devices",
             error: err.message,
         });
     }
@@ -389,24 +387,33 @@ export const logoutAll = async (req, res) => {
 
 export const verifyEmail = async (req, res) => {
     try {
-        const { otp, email } = req.body;
+        const otp = req.body?.otp || req.query?.otp;
+        const email = req.body?.email || req.query?.email;
 
-        const otpHash = crypto.createHash("sha256").update(otp).digest("hex");
+        if (!otp || !email) {
+            return res.status(400).json({
+                message: "OTP and email are required",
+            });
+        }
+
+        const otpHash = crypto.createHash("sha256").update(String(otp)).digest("hex");
 
         const otpDoc = await otpModel.findOne({
-            email,
+            email: email.toLowerCase().trim(),
             otpHash,
         });
 
         if (!otpDoc) {
             return res.status(400).json({
-                message: "Invalid OTP",
+                message: "Invalid or expired OTP",
             });
         }
 
-        const user = await userModel.findByIdAndUpdate(otpDoc.user, {
-            verified: true,
-        });
+        const user = await userModel.findByIdAndUpdate(
+            otpDoc.user,
+            { verified: true },
+            { new: true },
+        );
 
         await otpModel.deleteMany({
             user: otpDoc.user,
@@ -415,6 +422,7 @@ export const verifyEmail = async (req, res) => {
         return res.status(200).json({
             message: "Email verified successfully",
             user: {
+                id: user._id,
                 username: user.username,
                 email: user.email,
                 verified: user.verified,

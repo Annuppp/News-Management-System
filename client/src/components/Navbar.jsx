@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Home, LayoutDashboard, LogOut, Plus, Menu, X } from "lucide-react";
+import api from "../services/api";
 
 function Navbar() {
     const navigate = useNavigate();
@@ -12,7 +13,11 @@ function Navbar() {
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch {
+                setUser(null);
+            }
         }
     }, []);
 
@@ -27,12 +32,18 @@ function Navbar() {
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const handleLogout = () => {
+    const handleLogout = async () => {
+        try {
+            await api.get("/user/logout");
+        } catch {
+            // Server session might already be expired
+        }
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
         setUser(null);
         window.location.href = "/login";
-    }; // till here
+    };
 
     const closeMenu = () => setMenuOpen(false);
 

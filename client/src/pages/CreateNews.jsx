@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import MDEditor from "@uiw/react-md-editor";
@@ -16,21 +16,22 @@ const CreateNews = () => {
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [fetchingCategories, setFetchingCategories] = useState(true);
+    const [error, setError] = useState("");
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const res = await api.get("/category/getAll");
-            setCategories(res.data);
+            setCategories(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Error fetching categories", err);
         } finally {
             setFetchingCategories(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
 
     const handleChange = (e) => {
         setFormData({
@@ -42,6 +43,7 @@ const CreateNews = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError("");
         try {
             const formDataToSend = new FormData();
             formDataToSend.append("title", formData.title);
@@ -52,7 +54,7 @@ const CreateNews = () => {
                 formDataToSend.append("image", formData.image);
             }
 
-            const res = await api.post("/news/create", formDataToSend, {
+            await api.post("/news/create", formDataToSend, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -60,6 +62,10 @@ const CreateNews = () => {
             navigate("/dashboard");
         } catch (err) {
             console.error("Error creating news:", err);
+            setError(
+                err.response?.data?.message ||
+                    "Error creating news. Please check your inputs.",
+            );
         } finally {
             setLoading(false);
         }
@@ -74,6 +80,11 @@ const CreateNews = () => {
             <h1 className="text-3xl font-bold mb-6">Create News</h1>
 
             <form onSubmit={handleSubmit} className="max-w-2xl">
+                {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        {error}
+                    </div>
+                )}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-semibold mb-2">
                         Title

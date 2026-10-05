@@ -4,12 +4,14 @@ import connectDB from "./src/config/database.js";
 // database connection
 connectDB();
 
-app.get('/api/test', (req,res) => {
+app.get("/api/test", (req, res) => {
     res.json({
-        message: "backend is working"
-    })
-})
+        message: "backend is working",
+    });
+});
 
-app.listen("3000", () => {
-    console.log("Server is running at PORT: 3000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server is running at PORT: ${PORT}`);
 });

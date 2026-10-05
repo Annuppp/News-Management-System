@@ -22,12 +22,15 @@ authRouter.post("/rotateTokens", authController.rotateTokens);
 
 // Logout route
 authRouter.get("/logout", authController.logout);
+authRouter.post("/logout", authController.logout);
 
 // LogoutAll
 authRouter.get("/logoutAll", authController.logoutAll);
+authRouter.post("/logoutAll", authController.logoutAll);
 
-//verify Email
+// verify Email (supports both GET and POST)
 authRouter.get("/verify-email", authController.verifyEmail);
+authRouter.post("/verify-email", authController.verifyEmail);
 
 // Forgot password
 authRouter.post("/forgot-password", authController.forgotPassword);

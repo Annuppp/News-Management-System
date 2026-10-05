@@ -5,7 +5,6 @@ import MainLayout from "./layouts/MainLayout.jsx";
 
 import Home from "./pages/Home.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import VerifyOTP from "./pages/VerifyOtp.jsx";
@@ -14,6 +13,7 @@ import ResetPassword from "./pages/ResetPassword.jsx";
 import CreateNews from "./pages/CreateNews.jsx";
 import NewsDetail from "./pages/NewsDetail.jsx";
 import EditNews from "./pages/EditNews.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 function App() {
     return (
@@ -32,10 +32,14 @@ function App() {
 
                 <Route element={<MainLayout />}>
                     <Route path="/" element={<Home />} />
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/create-news" element={<CreateNews />} />
                     <Route path="/news/:id" element={<NewsDetail />} />
-                    <Route path="/news/edit/:id" element={<EditNews />} />
+
+                    {/* Protected Routes - require login */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/dashboard" element={<Dashboard />} />
+                        <Route path="/create-news" element={<CreateNews />} />
+                        <Route path="/news/edit/:id" element={<EditNews />} />
+                    </Route>
                 </Route>
             </Routes>
         </BrowserRouter>

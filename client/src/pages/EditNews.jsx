@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 import MDEditor from "@uiw/react-md-editor";
@@ -17,37 +17,40 @@ const EditNews = () => {
     const [loading, setLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [fetchingCategories, setFetchingCategories] = useState(true);
+    const [error, setError] = useState("");
 
-    useEffect(() => {
-        fetchCategories();
-        fetchNews();
-    }, []);
-
-    const fetchNews = async () => {
-        try {
-            const res = await api.get(`/news/${id}`);
-            setFormData({
-                title: res.data.title,
-                content: res.data.content,
-                category: res.data.category._id,
-                status: res.data.status,
-                image: "",
-            });
-        } catch (err) {
-            console.error("Error fetching news:", err);
-        }
-    };
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const res = await api.get("/category/getAll");
-            setCategories(res.data);
+            setCategories(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Error fetching categories", err);
         } finally {
             setFetchingCategories(false);
         }
-    };
+    }, []);
+
+    const fetchNews = useCallback(async () => {
+        try {
+            const res = await api.get(`/news/${id}`);
+            const data = res.data;
+            setFormData({
+                title: data.title || "",
+                content: data.content || "",
+                category: data.category?._id || data.category || "",
+                status: data.status || "draft",
+                image: "",
+            });
+        } catch (err) {
+            console.error("Error fetching news:", err);
+            setError("Failed to load news article.");
+        }
+    }, [id]);
+
+    useEffect(() => {
+        fetchCategories();
+        fetchNews();
+    }, [fetchCategories, fetchNews]);
 
     const handleChange = (e) => {
         setFormData({
@@ -59,6 +62,7 @@ const EditNews = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError("");
         try {
             const formDataToSend = new FormData();
             formDataToSend.append("title", formData.title);
@@ -69,7 +73,7 @@ const EditNews = () => {
                 formDataToSend.append("image", formData.image);
             }
 
-            const res = await api.patch(`/news/update/${id}`, formDataToSend, {
+            await api.patch(`/news/update/${id}`, formDataToSend, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
@@ -77,6 +81,10 @@ const EditNews = () => {
             navigate(`/news/${id}`);
         } catch (err) {
             console.error("Error updating news:", err);
+            setError(
+                err.response?.data?.message ||
+                    "Error updating news. Please check your inputs.",
+            );
         } finally {
             setLoading(false);
         }
@@ -91,6 +99,11 @@ const EditNews = () => {
             <h1 className="text-3xl font-bold mb-6">Edit News</h1>
 
             <form onSubmit={handleSubmit} className="max-w-2xl">
+                {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                        {error}
+                    </div>
+                )}
                 <div className="mb-4">
                     <label className="block text-gray-700 font-semibold mb-2">
                         Title

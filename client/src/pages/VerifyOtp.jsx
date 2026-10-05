@@ -42,8 +42,9 @@ function VerifyOTP() {
 
         setLoading(true);
         try {
-            const res = await api.get("/user/verify-email", {
-                params: { otp: form.otp, email: form.email },
+            await api.post("/user/verify-email", {
+                otp: form.otp,
+                email: form.email,
             });
             alert("Email verified successfully!");
             navigate("/login");

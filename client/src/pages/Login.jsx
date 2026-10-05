@@ -63,10 +63,12 @@ function Login() {
         try {
             const res = await api.post("/user/login", form);
 
-            // added the lines here
             localStorage.setItem("accessToken", res.data.accessToken);
+            if (res.data.refreshToken) {
+                localStorage.setItem("refreshToken", res.data.refreshToken);
+            }
             localStorage.setItem("user", JSON.stringify(res.data.user));
-            navigate("/"); // will have to remove these lines when email part is done
+            navigate("/");
 
             // console.log(res.data);
             // alert("Login Successful");

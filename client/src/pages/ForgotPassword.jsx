@@ -35,7 +35,7 @@ function ForgotPassword() {
 
         setLoading(true);
         try {
-            const res = await api.post("/user/forgot-password", form);
+            await api.post("/user/forgot-password", form);
             alert("OTP sent to your email!");
             navigate("/reset-password");
         } catch (err) {

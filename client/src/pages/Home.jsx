@@ -1,6 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, { getImageUrl } from "../services/api";
+
+const getPlainTextExcerpt = (markdown = "") => {
+    return markdown
+        .replace(/!\[.*?\]\(.*?\)/g, "") // remove images
+        .replace(/\[([^\]]+)\]\(.*?\)/g, "$1") // clean links
+        .replace(/[#*`_~>-]/g, "") // clean markdown tokens
+        .replace(/\n+/g, " ")
+        .trim();
+};
 
 function Home() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -18,35 +27,16 @@ function Home() {
 
     const [debouncedSearch, setDebouncedSearch] = useState("");
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(searchQuery);
-            setIsSearching(true);
-        }, 100);
-        return () => clearTimeout(timer);
-    }, [searchQuery]);
-
-    useEffect(() => {
-        fetchNews(1, true);
-    }, [debouncedSearch]);
-
-    useEffect(() => {
-        fetchCategories();
-    }, []);
-
-    useEffect(() => {
-        fetchNews(1, false);
-    }, [selectedCategory]);
-
-    const fetchCategories = async () => {
+    const fetchCategories = useCallback(async () => {
         try {
             const res = await api.get("/category/getAll");
-            setCategories(res.data);
+            setCategories(Array.isArray(res.data) ? res.data : []);
         } catch (err) {
             console.error("Error fetching categories:", err);
         }
-    };
-    const fetchNews = async (page = 1, isSearch = false) => {
+    }, []);
+
+    const fetchNews = useCallback(async (page = 1, isSearch = false) => {
         try {
             if (isSearch) {
                 setIsSearching(true);
@@ -59,15 +49,15 @@ function Home() {
                 : "";
 
             const searchQueryStr = debouncedSearch
-                ? `&search=${debouncedSearch}`
+                ? `&search=${encodeURIComponent(debouncedSearch)}`
                 : "";
 
             const res = await api.get(
-                `/news?page=${page}&limit=5${categoryQuery}${searchQueryStr}`,
+                `/news?page=${page}&limit=6${categoryQuery}${searchQueryStr}`,
             );
-            setNews(res.data.news);
-            setCurrentPage(res.data.pagination.currentPage);
-            setTotalPages(res.data.pagination.totalPages);
+            setNews(res.data.news || []);
+            setCurrentPage(res.data.pagination?.currentPage || 1);
+            setTotalPages(res.data.pagination?.totalPages || 1);
         } catch (err) {
             console.error("Error fetching news:", err);
         } finally {
@@ -77,13 +67,28 @@ function Home() {
                 setLoading(false);
             }
         }
-    };
+    }, [selectedCategory, debouncedSearch]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        fetchCategories();
+    }, [fetchCategories]);
+
+    useEffect(() => {
+        fetchNews(1, Boolean(debouncedSearch));
+    }, [fetchNews, debouncedSearch, selectedCategory]);
 
     const handleCategoryClick = (categoryId) => {
         setSelectedCategory(categoryId);
     };
 
-    if (loading) {
+    if (loading && !isSearching) {
         return <div className="p-8">Loading...</div>;
     }
 
@@ -127,7 +132,7 @@ function Home() {
                 />
 
                 <button
-                    onClick={() => fetchNews(1)}
+                    onClick={() => fetchNews(1, true)}
                     className="px-6 py-3 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition"
                 >
                     Search
@@ -144,34 +149,36 @@ function Home() {
                         <div
                             key={item._id}
                             onClick={() => navigate(`/news/${item._id}`)}
-                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer"
+                            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition cursor-pointer flex flex-col"
                         >
                             {item.image && (
                                 <img
-                                    src={`http://localhost:3000/${item.image.replace("src/uploads/", "uploads/")}`}
+                                    src={getImageUrl(item.image)}
                                     alt={item.title}
                                     className="w-full h-48 object-cover"
                                 />
                             )}
-                            <div className="p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                    {item.category && (
-                                        <span className="bg-sky-100 text-sky-800 text-xs px-2 py-1 rounded">
-                                            {item.category.name}
+                            <div className="p-4 flex-1 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        {item.category && (
+                                            <span className="bg-sky-100 text-sky-800 text-xs px-2 py-1 rounded">
+                                                {item.category.name}
+                                            </span>
+                                        )}
+                                        <span className="text-gray-500 text-xs">
+                                            {new Date(
+                                                item.createdAt,
+                                            ).toLocaleDateString()}
                                         </span>
-                                    )}
-                                    <span className="text-gray-500 text-xs">
-                                        {new Date(
-                                            item.createdAt,
-                                        ).toLocaleDateString()}
-                                    </span>
+                                    </div>
+                                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                                        {item.title}
+                                    </h3>
+                                    <p className="text-gray-600 text-sm line-clamp-3">
+                                        {getPlainTextExcerpt(item.content)}
+                                    </p>
                                 </div>
-                                <h3 className="font-semibold text-lg mb-2">
-                                    {item.title}
-                                </h3>
-                                <p className="text-gray-600 text-sm line-clamp-3">
-                                    {item.content}
-                                </p>
                             </div>
                         </div>
                     ))}

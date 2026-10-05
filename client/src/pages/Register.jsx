@@ -111,13 +111,13 @@ function Register() {
             formData.append("password", form.password);
             formData.append("image", image);
 
-            const res = await api.post("/user/register", formData, {
+            await api.post("/user/register", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
             });
-            alert("Registered Successfully! Please login."); // changed the message here
-            navigate("/login"); // changed the redirecting path
+            alert("Registered successfully! Please login.");
+            navigate("/login");
         } catch (err) {
             setErrors({
                 server:

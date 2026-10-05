@@ -42,26 +42,37 @@ export const getNewsById = async (req, res) => {
 
 export const updateNews = async (req, res) => {
     try {
-        const news = await newsModel
-            .findByIdAndUpdate(
-                req.params.id,
-                {
-                    ...req.body,
-                    image: req.file?.path,
-                },
-                {
-                    returnDocument: "after",
-                    runValidators: true,
-                },
-            )
-            .populate("category")
-            .populate("author", "username email");
+        const existingNews = await newsModel.findById(req.params.id);
 
-        if (!news) {
+        if (!existingNews) {
             return res.status(404).json({
                 message: "News not found",
             });
         }
+
+        const isAuthor = existingNews.author.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === "admin";
+
+        if (!isAuthor && !isAdmin) {
+            return res.status(403).json({
+                message: "You are not authorized to update this news article",
+            });
+        }
+
+        const updateData = {};
+        if (req.body.title !== undefined) updateData.title = req.body.title;
+        if (req.body.content !== undefined) updateData.content = req.body.content;
+        if (req.body.category !== undefined) updateData.category = req.body.category;
+        if (req.body.status !== undefined) updateData.status = req.body.status;
+        if (req.file) updateData.image = req.file.path;
+
+        const news = await newsModel
+            .findByIdAndUpdate(req.params.id, updateData, {
+                returnDocument: "after",
+                runValidators: true,
+            })
+            .populate("category")
+            .populate("author", "username email");
 
         res.status(200).json({
             message: "News updated successfully",
@@ -76,16 +87,24 @@ export const updateNews = async (req, res) => {
 
 export const deleteNews = async (req, res) => {
     try {
-        const news = await newsModel
-            .findByIdAndDelete(req.params.id)
-            .populate("category")
-            .populate("author", "username email");
+        const existingNews = await newsModel.findById(req.params.id);
 
-        if (!news) {
+        if (!existingNews) {
             return res.status(404).json({
                 message: "News not found",
             });
         }
+
+        const isAuthor = existingNews.author.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === "admin";
+
+        if (!isAuthor && !isAdmin) {
+            return res.status(403).json({
+                message: "You are not authorized to delete this news article",
+            });
+        }
+
+        await newsModel.findByIdAndDelete(req.params.id);
 
         res.status(200).json({
             message: "News deleted successfully",
@@ -108,10 +127,11 @@ export const getAllNews = async (req, res) => {
             filter.category = req.query.category;
         }
 
-        if (req.query.search) {
+        if (req.query.search && req.query.search.trim()) {
+            const escaped = req.query.search.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
             filter.$or = [
-                { title: { $regex: req.query.search, $options: "i" } },
-                { content: { $regex: req.query.search, $options: "i" } },
+                { title: { $regex: escaped, $options: "i" } },
+                { content: { $regex: escaped, $options: "i" } },
             ];
         }
 
@@ -130,8 +150,8 @@ export const getAllNews = async (req, res) => {
             pagination: {
                 currentPage: page,
                 totalPages: totalPages,
-                totalItems: total,
-                itemsPerPage: limit,
+                totalItems: total,   
+                itemsPerPage: limit,  
             },
         });
     } catch (error) {
