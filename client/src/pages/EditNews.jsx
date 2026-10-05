@@ -98,11 +98,17 @@ const EditNews = () => {
                 {/* Back button */}
                 <button
                     type="button"
-                    onClick={() => navigate(`/news/${id}`)}
+                    onClick={() => {
+                        if (window.history.length > 1) {
+                            navigate(-1);
+                        } else {
+                            navigate(`/news/${id}`);
+                        }
+                    }}
                     className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition cursor-pointer"
                 >
                     <ArrowLeft size={16} />
-                    Back to Article
+                    Back
                 </button>
 
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200/80 p-6 sm:p-10">
@@ -200,23 +206,23 @@ const EditNews = () => {
                                                 status: "draft",
                                             }))
                                         }
-                                        className={`p-4 rounded-xl border-2 text-left transition-all duration-200 cursor-pointer flex items-center gap-3.5 ${
+                                        className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex items-center gap-3 ${
                                             formData.status === "draft"
-                                                ? "border-amber-500 bg-amber-50/70 text-amber-900 shadow-sm ring-1 ring-amber-400"
-                                                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50/60"
+                                                ? "border-sky-500 bg-sky-50/60 text-sky-950 ring-2 ring-sky-200"
+                                                : "border-gray-200 bg-white text-gray-700 hover:border-sky-300 hover:bg-sky-50/30"
                                         }`}
                                     >
                                         <div
-                                            className={`p-2.5 rounded-xl shrink-0 ${
+                                            className={`p-2 rounded-lg shrink-0 ${
                                                 formData.status === "draft"
-                                                    ? "bg-amber-500 text-white shadow-xs"
+                                                    ? "bg-sky-500 text-white"
                                                     : "bg-gray-100 text-gray-500"
                                             }`}
                                         >
-                                            <FileText size={20} />
+                                            <FileText size={18} />
                                         </div>
                                         <div>
-                                            <div className="font-semibold text-sm sm:text-base">
+                                            <div className="font-semibold text-sm text-gray-900">
                                                 Save as Draft
                                             </div>
                                             <div className="text-xs text-gray-500 mt-0.5">
@@ -233,23 +239,23 @@ const EditNews = () => {
                                                 status: "published",
                                             }))
                                         }
-                                        className={`p-4 rounded-xl border-2 text-left transition-all duration-200 cursor-pointer flex items-center gap-3.5 ${
+                                        className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex items-center gap-3 ${
                                             formData.status === "published"
-                                                ? "border-emerald-500 bg-emerald-50/70 text-emerald-900 shadow-sm ring-1 ring-emerald-400"
-                                                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-50/60"
+                                                ? "border-sky-500 bg-sky-50/60 text-sky-950 ring-2 ring-sky-200"
+                                                : "border-gray-200 bg-white text-gray-700 hover:border-sky-300 hover:bg-sky-50/30"
                                         }`}
                                     >
                                         <div
-                                            className={`p-2.5 rounded-xl shrink-0 ${
+                                            className={`p-2 rounded-lg shrink-0 ${
                                                 formData.status === "published"
-                                                    ? "bg-emerald-500 text-white shadow-xs"
+                                                    ? "bg-sky-500 text-white"
                                                     : "bg-gray-100 text-gray-500"
                                             }`}
                                         >
-                                            <Globe size={20} />
+                                            <Globe size={18} />
                                         </div>
                                         <div>
-                                            <div className="font-semibold text-sm sm:text-base">
+                                            <div className="font-semibold text-sm text-gray-900">
                                                 Publish Immediately
                                             </div>
                                             <div className="text-xs text-gray-500 mt-0.5">
@@ -293,23 +299,37 @@ const EditNews = () => {
                             <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => navigate(`/news/${id}`)}
-                                    className="px-5 py-3 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition cursor-pointer text-sm"
+                                    onClick={() => {
+                                        if (window.history.length > 1) {
+                                            navigate(-1);
+                                        } else {
+                                            navigate(`/news/${id}`);
+                                        }
+                                    }}
+                                    className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition cursor-pointer text-sm"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-semibold px-7 py-3 rounded-xl shadow-sm transition-all duration-200 disabled:opacity-50 cursor-pointer text-sm flex items-center gap-2"
+                                    className="bg-sky-500 hover:bg-sky-600 active:bg-sky-700 text-white font-medium px-6 py-2.5 rounded-lg shadow-sm transition-all duration-150 disabled:opacity-50 cursor-pointer text-sm flex items-center gap-2"
                                 >
                                     {loading ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            <span>Updating News...</span>
+                                            <span>
+                                                {formData.status === "published"
+                                                    ? "Publishing Updates..."
+                                                    : "Saving Changes..."}
+                                            </span>
                                         </>
                                     ) : (
-                                        <span>Update News</span>
+                                        <span>
+                                            {formData.status === "published"
+                                                ? "Save & Publish Article"
+                                                : "Save Changes (Draft)"}
+                                        </span>
                                     )}
                                 </button>
                             </div>

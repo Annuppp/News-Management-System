@@ -15,12 +15,12 @@ export const getDashboard = async (req, res) => {
             status: "draft",
         });
 
-        // Get recent news (last 5)
+        // Get recent news (up to 50)
         const recentNews = await newsModel
             .find({ author: userId })
             .sort({ createdAt: -1 })
-            .limit(5)
-            .populate("category", "name"); // populate category name
+            .limit(50)
+            .populate("category", "name description");
 
         const stats = {
             totalNews,

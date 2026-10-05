@@ -1,4 +1,5 @@
 import newsModel from "../models/news.model.js";
+import commentModel from "../models/comment.model.js";
 
 export const createNews = async (req, res) => {
     try {
@@ -62,12 +63,15 @@ export const updateNews = async (req, res) => {
         const updateData = {};
         if (req.body.title !== undefined) updateData.title = req.body.title;
         if (req.body.content !== undefined) updateData.content = req.body.content;
-        if (req.body.category !== undefined) updateData.category = req.body.category;
+        if (req.body.category && typeof req.body.category === "string" && req.body.category.trim() !== "") {
+            updateData.category = req.body.category.trim();
+        }
         if (req.body.status !== undefined) updateData.status = req.body.status;
         if (req.file) updateData.image = req.file.path;
 
         const news = await newsModel
             .findByIdAndUpdate(req.params.id, updateData, {
+                new: true,
                 returnDocument: "after",
                 runValidators: true,
             })
@@ -105,6 +109,7 @@ export const deleteNews = async (req, res) => {
         }
 
         await newsModel.findByIdAndDelete(req.params.id);
+        await commentModel.deleteMany({ news: req.params.id });
 
         res.status(200).json({
             message: "News deleted successfully",
@@ -138,6 +143,7 @@ export const getAllNews = async (req, res) => {
         const news = await newsModel
             .find(filter)
             .populate("category")
+            .populate("author", "username")
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit);
